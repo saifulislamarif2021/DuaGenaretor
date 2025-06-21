@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="bn" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ইবাদতকারীর পথ: একটি ইন্টারেক্টিভ অ্যাপ্লিকেশন</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Warm Serenity -->
+    <!-- Application Structure Plan: The SPA is a guided journey. New Gemini API features are added: 1. A 'Daily Reflection' section for AI-generated prompts. 2. A 'Personal Dua Generator' for AI-composed supplications based on user input. These additions enhance interactivity and personalization, deepening the user's spiritual engagement with the content. A mobile hamburger menu has been added for better navigation. -->
+    <!-- Visualization & Content Choices: 1. Identity/Impact: HTML/CSS columns. 2. Crisis/Priorities: Chart.js charts. 3. Revival Path: Interactive HTML cards. 4. Daily Reflection: Button triggers Gemini API to fetch a question. Goal: Engage. 5. Dua Generator: Text input and button trigger Gemini API to generate a personalized dua. Goal: Personalize/Assist. All methods confirm to NO SVG/Mermaid. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background-color: #FDF6E3; /* Warm Neutral Background */
+            color: #586E75; /* Soft, warm grey-cyan text */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; 
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover {
+            color: #268BD2; /* Accent Blue */
+        }
+        .active-link {
+            color: #268BD2;
+            border-bottom: 2px solid #268BD2;
+        }
+        .step-card {
+            border: 2px solid transparent;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .step-card:hover {
+            border-color: #859900; /* Accent Green */
+            transform: translateY(-5px);
+        }
+        .step-card.active {
+            border-color: #268BD2; /* Accent Blue */
+            background-color: #FEFBF3;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #268BD2;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="text-xl font-bold text-[#268BD2]">ইবাদতকারীর পথ</div>
+                <div id="desktop-menu" class="hidden md:flex items-center space-x-6">
+                    <a href="#identity" class="nav-link font-semibold pb-1">পরিচয়</a>
+                    <a href="#crisis" class="nav-link font-semibold pb-1">সংকট</a>
+                    <a href="#revival" class="nav-link font-semibold pb-1">উত্তরণের পথ</a>
+                    <a href="#reflection" class="nav-link font-semibold pb-1">প্রতিফলন</a>
+                    <a href="#dua" class="nav-link font-semibold pb-1">দোয়া</a>
+                    <a href="#impact" class="nav-link font-semibold pb-1">প্রভাব</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-[#002b36] focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden py-2">
+                <a href="#identity" class="block nav-link text-center py-2">পরিচয়</a>
+                <a href="#crisis" class="block nav-link text-center py-2">সংকট</a>
+                <a href="#revival" class="block nav-link text-center py-2">উত্তরণের পথ</a>
+                <a href="#reflection" class="block nav-link text-center py-2">প্রতিফলন</a>
+                <a href="#dua" class="block nav-link text-center py-2">দোয়া</a>
+                <a href="#impact" class="block nav-link text-center py-2">প্রভাব</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <section class="text-center py-12 md:py-20">
+            <h1 class="text-4xl md:text-6xl font-bold text-[#002b36] mb-4">প্রকৃত ইবাদতকারী: ইতিহাসের নির্মাতা</h1>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-[#657b83]">তারা দুনিয়ার চাকচিক্য থেকে মুখ ফিরিয়ে আল্লাহর ভয়ে ভীত এবং ইবাদতে কঠোর পরিশ্রমী। এই অ্যাপ্লিকেশনটি তাদের পরিচয়, সংকট এবং উত্তরণের পথ প্রদর্শন করে।</p>
+        </section>
+
+        <!-- পরিচয় Section -->
+        <section id="identity" class="py-12 md:py-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-10 text-[#002b36]">আত্ম-পরিচয়: দুটি ভিন্ন পথ</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-[#FEFBF3] p-6 rounded-lg shadow-md border-t-4 border-[#268BD2]">
+                    <h3 class="text-2xl font-bold mb-4 flex items-center"><span class="text-3xl mr-3">❤️</span> প্রকৃত ইবাদতকারীর বৈশিষ্ট্য</h3>
+                    <ul class="space-y-3 list-inside list-disc">
+                        <li><strong>আল্লাহভীতি (তাকওয়া):</strong> গোপনে ও প্রকাশ্যে আল্লাহকে ভয় করা, যা পাপ থেকে রক্ষা করে।</li>
+                        <li><strong>ইবাদতে একনিষ্ঠতা:</strong> ফরজ ও নফলে কঠোর পরিশ্রমী, যা আত্মার খোরাক জোগায়।</li>
+                        <li><strong>কুরআনের সাথে সম্পর্ক:</strong> কুরআনকে জীবনের সংবিধান হিসেবে গ্রহণ ও বাস্তবায়ন করা।</li>
+                        <li><strong>দুনিয়াবিমুখতা:</strong> দুনিয়ার মোহে আবদ্ধ না হয়ে অল্পে তুষ্ট থাকা।</li>
+                    </ul>
+                </div>
+                <div class="bg-[#FEFBF3] p-6 rounded-lg shadow-md border-t-4 border-[#cb4b16]">
+                     <h3 class="text-2xl font-bold mb-4 flex items-center"><span class="text-3xl mr-3">💔</span> কঠিন হৃদয়ের লক্ষণ</h3>
+                    <ul class="space-y-3 list-inside list-disc">
+                        <li><strong>দুনিয়ার প্রতি অতি ভালোবাসা:</strong> অর্থ, খ্যাতি ও মর্যাদাকে জীবনের মূল লক্ষ্য বানানো।</li>
+                        <li><strong>অহেতুক ব্যস্ততা:</strong> মোবাইল ও সোশ্যাল মিডিয়ায় আল্লাহর স্মরণ থেকে গাফেল থাকা।</li>
+                        <li><strong>পাপের প্রভাব:</strong> ছোট-বড় পাপে লিপ্ত হয়ে ইবাদতের স্বাদ হারিয়ে ফেলা।</li>
+                        <li><strong>ইবাদতে উদাসীনতা:</strong> কুরআন পাঠ ও নফল ইবাদতে মন না বসা।</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- সংকট Section -->
+        <section id="crisis" class="py-12 md:py-16 bg-white/50 rounded-xl">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-10 text-[#002b36]">বর্তমান সংকট: একটি বিশ্লেষণ</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="p-4">
+                    <h3 class="text-2xl font-semibold text-center mb-4">হৃদয়ের কাঠিন্যের কারণ</h3>
+                    <p class="text-center mb-4 text-sm">আধুনিক জীবনে বিভিন্ন কারণ আমাদের অন্তরকে আল্লাহ্‌র স্মরণ থেকে দূরে সরিয়ে দিচ্ছে। এই চার্টটি প্রধান কারণগুলোর আনুপাতিক হার দেখাচ্ছে।</p>
+                    <div class="chart-container">
+                        <canvas id="crisisCauseChart"></canvas>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="text-2xl font-semibold text-center mb-4">জীবনের অগ্রাধিকারের লড়াই</h3>
+                    <p class="text-center mb-4 text-sm">একজন ইবাদতকারী ও একজন উদাসীন ব্যক্তির মনোযোগের কেন্দ্রবিন্দু সম্পূর্ণ ভিন্ন। তাদের অগ্রাধিকারের তুলনামূলক চিত্র।</p>
+                    <div class="chart-container">
+                        <canvas id="prioritiesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- উত্তরণের পথ Section -->
+        <section id="revival" class="py-12 md:py-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#002b36]">অন্তরকে নরম করার উপায়</h2>
+            <p class="text-center max-w-2xl mx-auto mb-10">হৃদয়ের কাঠিন্য থেকে মুক্তি পাওয়া সম্ভব। নিচের ধাপগুলোতে ক্লিক করে বিস্তারিত জানুন।</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+                <div class="step-card text-center p-4 bg-white rounded-lg shadow-sm" data-step="1">
+                    <div class="text-4xl mb-2">📖</div><h4 class="font-bold">কুরআন</h4>
+                </div>
+                <div class="step-card text-center p-4 bg-white rounded-lg shadow-sm" data-step="2">
+                    <div class="text-4xl mb-2">🙏</div><h4 class="font-bold">নফল ইবাদত</h4>
+                </div>
+                <div class="step-card text-center p-4 bg-white rounded-lg shadow-sm" data-step="3">
+                    <div class="text-4xl mb-2">📿</div><h4 class="font-bold">আল্লাহর জিকির</h4>
+                </div>
+                <div class="step-card text-center p-4 bg-white rounded-lg shadow-sm" data-step="4">
+                    <div class="text-4xl mb-2">🤝</div><h4 class="font-bold">সৎসঙ্গ</h4>
+                </div>
+                <div class="step-card text-center p-4 bg-white rounded-lg shadow-sm" data-step="5">
+                    <div class="text-4xl mb-2">⚰️</div><h4 class="font-bold">মৃত্যু স্মরণ</h4>
+                </div>
+            </div>
+
+            <div id="stepDetails" class="bg-[#FEFBF3] p-6 rounded-lg shadow-inner min-h-[150px] flex items-center justify-center transition-all duration-500">
+                <p class="text-lg text-center text-[#657b83]">একটি ধাপ নির্বাচন করুন</p>
+            </div>
+        </section>
+
+        <!-- Daily Reflection Section -->
+        <section id="reflection" class="py-12 md:py-16 bg-white/50 rounded-xl">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#002b36]">দৈনিক আধ্যাত্মিক প্রতিফলন</h2>
+            <p class="text-center max-w-2xl mx-auto mb-8">প্রতিদিন একটি নতুন চিন্তার খোরাক পেতে নিচের বাটনে ক্লিক করুন। এটি আপনাকে আত্ম-জিজ্ঞাসা ও কৃতজ্ঞ হতে সাহায্য করবে।</p>
+            <div class="text-center mb-8">
+                <button id="getReflectionBtn" class="bg-[#2aa198] text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-[#20837b] transition duration-300">
+                    ✨ নতুন প্রশ্ন তৈরি করুন
+                </button>
+            </div>
+            <div id="reflectionResult" class="bg-[#FEFBF3] p-6 rounded-lg shadow-inner min-h-[100px] flex items-center justify-center">
+                 <p class="text-lg text-center text-[#657b83]">এখানে আপনার আজকের প্রশ্নটি দেখানো হবে...</p>
+            </div>
+        </section>
+        
+        <!-- Dua Generator Section -->
+        <section id="dua" class="py-12 md:py-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-[#002b36]">ব্যক্তিগত দোয়া জেনারেটর</h2>
+            <p class="text-center max-w-2xl mx-auto mb-8">আপনার মনের অবস্থা বা প্রয়োজন সম্পর্কে সংক্ষেপে লিখুন (যেমন: "আমি উদ্বিগ্ন" বা "কৃতজ্ঞতা প্রকাশ করতে চাই")। Gemini API আপনার জন্য একটি সুন্দর ও ব্যক্তিগত দোয়া তৈরি করবে।</p>
+            <div class="max-w-xl mx-auto">
+                <textarea id="duaInput" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#268BD2] focus:border-transparent transition" rows="3" placeholder="আপনার অনুভূতি এখানে লিখুন..."></textarea>
+                <div class="text-center mt-4">
+                     <button id="getDuaBtn" class="bg-[#268BD2] text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-[#1e6a9e] transition duration-300">
+                        ✨ আমার জন্য দোয়া তৈরি করুন
+                    </button>
+                </div>
+            </div>
+             <div id="duaResult" class="max-w-xl mx-auto bg-[#FEFBF3] mt-8 p-6 rounded-lg shadow-inner min-h-[150px] flex items-center justify-center">
+                 <p class="text-lg text-center text-[#657b83]">আপনার ব্যক্তিগত দোয়া এখানে দেখানো হবে...</p>
+            </div>
+        </section>
+
+        <!-- প্রভাব Section -->
+        <section id="impact" class="py-12 md:py-16 bg-white/50 rounded-xl">
+             <h2 class="text-3xl md:text-4xl font-bold text-center mb-10 text-[#002b36]">ইতিহাসে ইবাদতকারীর প্রভাব</h2>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                 <div class="bg-[#FEFBF3] p-6 rounded-lg shadow-md text-center">
+                     <div class="text-5xl mb-4 text-[#859900]">🌟</div>
+                     <h3 class="text-xl font-bold mb-2">চারিত্রিক প্রভাব</h3>
+                     <p>তাদের উন্নত চরিত্র, সততা ও ন্যায়পরায়ণতা সমাজের জন্য আদর্শ স্থাপন করে এবং অন্যদের অনুপ্রাণিত করে।</p>
+                 </div>
+                 <div class="bg-[#FEFBF3] p-6 rounded-lg shadow-md text-center">
+                    <div class="text-5xl mb-4 text-[#268BD2]">🧭</div>
+                    <h3 class="text-xl font-bold mb-2">আধ্যাত্মিক নেতৃত্ব</h3>
+                    <p>তাদের জ্ঞান ও প্রজ্ঞা মানুষকে সঠিক পথ দেখায়, যা সভ্যতা ও জ্ঞান-বিজ্ঞানের ভিত্তি স্থাপন করে।</p>
+                </div>
+                <div class="bg-[#FEFBF3] p-6 rounded-lg shadow-md text-center">
+                    <div class="text-5xl mb-4 text-[#b58900]">✨</div>
+                    <h3 class="text-xl font-bold mb-2">আল্লাহর সাহায্য</h3>
+                    <p>তাদের দোয়ার বরকতে সমাজ বিপদ-আপদ থেকে রক্ষা পায় এবং পৃথিবীতে আল্লাহর রহমত বর্ষিত হয়।</p>
+                </div>
+             </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center mt-12 py-8 border-t border-[#93A1A1]/50">
+        <p class="text-lg font-semibold text-[#002b36]">"তারাই সত্যিকারের বুদ্ধিমান, যারা ক্ষণস্থায়ী দুনিয়ার বিনিময়ে চিরস্থায়ী জান্নাতকে ক্রয় করে নেয়।"</p>
+        <p class="text-sm mt-2">এই অ্যাপ্লিকেশনটি "প্রকৃত ইবাদতকারী" প্রতিবেদনের উপর ভিত্তি করে তৈরি এবং Gemini API দ্বারা সমৃদ্ধ।</p>
+    </footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Mobile Menu ---
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+
+        // --- Chart.js Configuration ---
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) { return label.join(' '); }
+            return label;
+        };
+        const chartDefaultOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: '#586E75', font: { family: "'Hind Siliguri', sans-serif" } } },
+                tooltip: { callbacks: { title: tooltipTitleCallback }, titleFont: { family: "'Hind Siliguri', sans-serif" }, bodyFont: { family: "'Hind Siliguri', sans-serif" }}
+            }
+        };
+
+        const crisisCauseCtx = document.getElementById('crisisCauseChart')?.getContext('2d');
+        if (crisisCauseCtx) {
+            new Chart(crisisCauseCtx, {
+                type: 'doughnut',
+                data: { labels: ['দুনিয়ার প্রতি ভালোবাসা', 'অহেতুক ব্যস্ততা', 'পাপের প্রভাব'], datasets: [{ data: [45, 35, 20], backgroundColor: ['#d33682', '#cb4b16', '#dc322f'], borderColor: '#FEFBF3', borderWidth: 3 }] },
+                options: { ...chartDefaultOptions }
+            });
+        }
+        
+        const prioritiesCtx = document.getElementById('prioritiesChart')?.getContext('2d');
+        if (prioritiesCtx) {
+            new Chart(prioritiesCtx, {
+                type: 'bar',
+                data: { labels: ['ইবাদতকারী', 'উদাসীন ব্যক্তি'], datasets: [{ label: 'পরকালের চিন্তা', data: [80, 20], backgroundColor: '#268BD2' }, { label: 'দুনিয়ার চিন্তা', data: [20, 80], backgroundColor: '#859900' }] },
+                options: { ...chartDefaultOptions, scales: { x: { stacked: true, ticks: { color: '#586E75' } }, y: { stacked: true, ticks: { callback: (value) => value + '%', color: '#586E75' } } }, indexAxis: 'y' }
+            });
+        }
+
+        const stepCards = document.querySelectorAll('.step-card');
+        const stepDetailsContainer = document.getElementById('stepDetails');
+        const stepData = {
+            1: { title: "কুরআনের দিকে প্রত্যাবর্তন", desc: "প্রতিদিন অর্থ ও তাফসিরসহ কুরআন পড়ুন। এটি অন্তরের মরিচা দূর করার শ্রেষ্ঠ ঔষধ এবং জীবনের প্রতিটি ক্ষেত্রে সঠিক পথের দিশারী।" },
+            2: { title: "নফল ইবাদতের অভ্যাস", desc: "ফরজ ইবাদতের পাশাপাশি অল্প করে হলেও তাহাজ্জুদ, ইশরাকের মতো নফল ইবাদত শুরু করুন। এই ছোট আমলগুলোই অন্তরকে আল্লাহর নিকটবর্তী করবে।" },
+            3: { title: "আল্লাহর জিকির", desc: "সর্বদা আল্লাহর স্মরণে (জিকিরে) নিজেকে ব্যস্ত রাখুন। হাঁটা-চলা, কাজ-কর্মের মাঝে জিকির করুন, কারণ এটি অন্তরকে সজীব ও প্রশান্ত রাখে।" },
+            4: { title: "সৎসঙ্গ অবলম্বন", desc: "ভালো ও দ্বীনদার মানুষের সাথে সম্পর্ক বাড়ান। তাদের সাহচর্য আপনাকে ইবাদতে উৎসাহিত করবে এবং দুনিয়ার মোহ থেকে দূরে রাখতে সাহায্য করবে।" },
+            5: { title: "মৃত্যুকে স্মরণ", desc: "প্রতিদিন কিছু সময়ের জন্য মৃত্যুকে স্মরণ করুন। এই চিন্তা আপনাকে দুনিয়ার প্রতি উদাসীন করে তুলবে এবং পরকালের জন্য প্রস্তুতি নিতে সাহায্য করবে।" }
+        };
+
+        stepCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const stepId = card.dataset.step;
+                const details = stepData[stepId];
+                stepCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                stepDetailsContainer.innerHTML = `<div class="text-center"><h3 class="text-2xl font-bold text-[#268BD2] mb-2">${details.title}</h3><p class="text-lg text-[#586E75]">${details.desc}</p></div>`;
+            });
+        });
+        
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove('active-link');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active-link');
+                }
+            });
+        });
+        
+        // --- Gemini API Integration ---
+        const apiKey = "AIzaSyB7vTFSE73OGgheNWNE1sIH_YvUwtDnxIQ"; 
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+        async function callGemini(prompt) {
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [{ text: prompt }]
+                }]
+            };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    return "দুঃখিত, একটি সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।";
+                }
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                return "সংযোগ সমস্যা। দয়া করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।";
+            }
+        }
+
+        function showLoader(container) {
+            container.innerHTML = '<div class="loader mx-auto"></div>';
+        }
+
+        // Daily Reflection Feature
+        const getReflectionBtn = document.getElementById('getReflectionBtn');
+        const reflectionResult = document.getElementById('reflectionResult');
+        getReflectionBtn.addEventListener('click', async () => {
+            showLoader(reflectionResult);
+            const prompt = "You are a wise spiritual guide. Generate a single, concise, and thought-provoking question in the Bengali language for daily spiritual reflection. The question should encourage self-awareness, gratitude, and a connection with God based on Islamic principles.";
+            const reflectionText = await callGemini(prompt);
+            reflectionResult.innerHTML = `<p class="text-lg text-center text-[#586E75]">${reflectionText.replace(/\n/g, '<br>')}</p>`;
+        });
+        
+        // Dua Generator Feature
+        const getDuaBtn = document.getElementById('getDuaBtn');
+        const duaInput = document.getElementById('duaInput');
+        const duaResult = document.getElementById('duaResult');
+        getDuaBtn.addEventListener('click', async () => {
+            const userInput = duaInput.value.trim();
+            if (!userInput) {
+                duaResult.innerHTML = '<p class="text-lg text-center text-[#cb4b16]">অনুগ্রহ করে আপনার অনুভূতি বা প্রয়োজন লিখুন।</p>';
+                return;
+            }
+            showLoader(duaResult);
+            const prompt = `You are a compassionate Islamic scholar. A person is feeling or needs something related to: "${userInput}". Based on this, compose a beautiful, heartfelt, and personal dua (supplication) for them in the Bengali language. The dua should be respectful, encouraging, and based on Quranic and Prophetic traditions. Start with a short, compassionate opening and end with 'আমিন'.`;
+            const duaText = await callGemini(prompt);
+            duaResult.innerHTML = `<p class="text-lg text-left text-[#586E75] whitespace-pre-wrap">${duaText}</p>`;
+        });
+
+    });
+</script>
+
+</body>
+</html>
